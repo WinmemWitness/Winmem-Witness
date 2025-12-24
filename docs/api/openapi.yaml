@@ -1,0 +1,397 @@
+openapi: 3.0.3
+info:
+  title: Winmem API
+  version: 0.1.0
+  description: |
+    Winmem API for projects, sources, events, memories, audit proofs, archives, and exports.
+
+servers:
+  - url: http://localhost:8787
+    description: Local development
+  - url: https://api.example.com
+    description: Production (replace)
+
+tags:
+  - name: Health
+  - name: Projects
+  - name: Sources
+  - name: Events
+  - name: Memories
+  - name: Audits
+  - name: Archives
+  - name: Exports
+  - name: Webhooks
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-WINMEM-API-KEY
+  schemas:
+    Error:
+      type: object
+      required: [ requestId, code, message ]
+      properties:
+        requestId:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    Project:
+      type: object
+      required: [ id, tenantId, name, cluster, status, createdAt, updatedAt ]
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        cluster:
+          type: string
+          enum: [ mainnet-beta, testnet, devnet ]
+        status:
+          type: string
+          enum: [ ACTIVE, LEGACY, ARCHIVED ]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProjectCreate:
+      type: object
+      required: [ name, cluster ]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        cluster:
+          type: string
+          enum: [ mainnet-beta, testnet, devnet ]
+
+    Source:
+      type: object
+      required: [ id, projectId, kind, value, createdAt ]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        kind:
+          type: string
+          enum: [ ADDRESS, PROGRAM, ACCOUNT_SNAPSHOT ]
+        value:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Event:
+      type: object
+      required: [ id, projectId, signature, slot, blockTime, type, data, createdAt ]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        signature:
+          type: string
+        slot:
+          type: integer
+        blockTime:
+          type: integer
+          description: Unix timestamp (seconds)
+        type:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    Memory:
+      type: object
+      required: [ id, projectId, windowStart, windowEnd, kind, content, createdAt ]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        windowStart:
+          type: integer
+          description: Unix timestamp (seconds)
+        windowEnd:
+          type: integer
+          description: Unix timestamp (seconds)
+        kind:
+          type: string
+          enum: [ WITNESS_LOG, SNAPSHOT, LIFECYCLE, NOTE ]
+        content:
+          type: object
+          additionalProperties: true
+        audit:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditBatch:
+      type: object
+      required: [ id, projectId, root, hashAlg, windowStart, windowEnd, count, createdAt ]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        root:
+          type: string
+        hashAlg:
+          type: string
+          enum: [ SHA256 ]
+        windowStart:
+          type: integer
+        windowEnd:
+          type: integer
+        count:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditProof:
+      type: object
+      required: [ leaf, path, root ]
+      properties:
+        leaf:
+          type: string
+        root:
+          type: string
+        path:
+          type: array
+          items:
+            type: object
+            required: [ hash, position ]
+            properties:
+              hash:
+                type: string
+              position:
+                type: string
+                enum: [ left, right ]
+
+    Archive:
+      type: object
+      required: [ id, projectId, status, createdAt ]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        status:
+          type: string
+          enum: [ PENDING, READY, FAILED ]
+        manifestHash:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Export:
+      type: object
+      required: [ id, projectId, status, createdAt ]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        status:
+          type: string
+          enum: [ PENDING, READY, FAILED ]
+        url:
+          type: string
+        checksum:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects:
+    get:
+      tags: [Projects]
+      summary: List projects
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: OK
+    post:
+      tags: [Projects]
+      summary: Create project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectCreate"
+      responses:
+        "201":
+          description: Created
+
+  /v1/projects/{projectId}:
+    get:
+      tags: [Projects]
+      summary: Get project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects/{projectId}/sources:
+    get:
+      tags: [Sources]
+      summary: List sources
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects/{projectId}/events:
+    get:
+      tags: [Events]
+      summary: List events
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects/{projectId}/memories:
+    get:
+      tags: [Memories]
+      summary: List memories
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects/{projectId}/audits/batches:
+    get:
+      tags: [Audits]
+      summary: List audit batches
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: OK
+
+  /v1/audits/proof:
+    get:
+      tags: [Audits]
+      summary: Get audit proof for a memory/event leaf hash
+      parameters:
+        - name: leaf
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects/{projectId}/archives:
+    get:
+      tags: [Archives]
+      summary: List archives
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: OK
+
+  /v1/projects/{projectId}/exports:
+    get:
+      tags: [Exports]
+      summary: List exports
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: OK
+
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+      description: Page size
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Opaque cursor token
