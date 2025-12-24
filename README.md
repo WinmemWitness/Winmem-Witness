@@ -13,8 +13,7 @@
   <img src="https://img.shields.io/badge/FOLLOW-@Winmemlabs-1D9BF0?style=for-the-badge" />
 </a>
 
-## Verified CA: 8jHrkk6DykU63361DvR2EwaMRpocSQcp1738Jf6Zpump
-
+## Verified CA: J2MvRWLQPnexhyPJbjHSrG9PrLPR7u2mL6qQHxCbpump
 
 </div>
 
