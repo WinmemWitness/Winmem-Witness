@@ -1,0 +1,43 @@
+{
+  "signature": "5Gx...systemTransferExample",
+  "slot": 267000000,
+  "blockTime": 1734990000,
+  "meta": {
+    "err": null,
+    "fee": 5000,
+    "preBalances": [
+      1000000000,
+      0
+    ],
+    "postBalances": [
+      999995000,
+      5000
+    ],
+    "logMessages": [
+      "Program 11111111111111111111111111111111 invoke [1]",
+      "Program 11111111111111111111111111111111 success"
+    ]
+  },
+  "transaction": {
+    "message": {
+      "accountKeys": [
+        "Sender1111111111111111111111111111111111",
+        "Receiver11111111111111111111111111111111",
+        "11111111111111111111111111111111"
+      ],
+      "instructions": [
+        {
+          "programId": "11111111111111111111111111111111",
+          "parsed": {
+            "type": "transfer",
+            "info": {
+              "source": "Sender1111111111111111111111111111111111",
+              "destination": "Receiver11111111111111111111111111111111",
+              "lamports": 5000
+            }
+          }
+        }
+      ]
+    }
+  }
+}

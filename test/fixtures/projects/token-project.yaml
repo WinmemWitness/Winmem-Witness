@@ -1,0 +1,19 @@
+version: "1"
+kind: "project"
+id: "token-project"
+name: "Token Project Fixture"
+sources:
+  - type: "solana"
+    cluster: "localnet"
+    rpcRef: "fixture"
+targets:
+  token:
+    mint: "So11111111111111111111111111111111111111112"
+    watch: ["mint", "transfer", "burn"]
+audit:
+  batch:
+    maxEvents: 100
+    maxSeconds: 60
+  merkle:
+    algorithm: "sha256"
+    includeCanonicalJson: true

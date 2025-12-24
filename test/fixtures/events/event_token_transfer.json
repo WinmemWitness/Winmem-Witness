@@ -1,0 +1,17 @@
+{
+  "id": "evt_0001",
+  "projectId": "token-project",
+  "source": "solana",
+  "eventType": "token.transfer",
+  "timestamp": 1734990100,
+  "slot": 267000123,
+  "signature": "4Qm...splTransferExample",
+  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+  "data": {
+    "mint": "So11111111111111111111111111111111111111112",
+    "sourceAta": "SourceATA111111111111111111111111111111111",
+    "destAta": "DestATA11111111111111111111111111111111111",
+    "authority": "Owner111111111111111111111111111111111111",
+    "amount": "4200000"
+  }
+}

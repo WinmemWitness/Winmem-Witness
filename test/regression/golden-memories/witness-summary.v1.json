@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "inputEvents": [
+    "evt_0001"
+  ],
+  "prompt": "witness-summary.prompt.md",
+  "expected": {
+    "summary": "A token transfer occurred on Solana using the SPL Token program. The event moved 4,200,000 units from a source ATA to a destination ATA, authorized by the owner.",
+    "signals": [
+      "token.transfer",
+      "spl-token",
+      "audit-ready"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "inputFixture": "test/fixtures/tx/tx_spl_token_transfer.json",
+  "expectedEvent": {
+    "eventType": "token.transfer",
+    "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "data": {
+      "mint": "So11111111111111111111111111111111111111112",
+      "amount": "4200000"
+    }
+  },
+  "canonicalHash": "sha256:PLACEHOLDER_EXPECTED_HASH"
+}

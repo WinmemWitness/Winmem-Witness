@@ -1,0 +1,38 @@
+{
+  "signature": "4Qm...splTransferExample",
+  "slot": 267000123,
+  "blockTime": 1734990100,
+  "meta": {
+    "err": null,
+    "fee": 5000,
+    "logMessages": [
+      "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [1]",
+      "Program log: Instruction: Transfer",
+      "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success"
+    ]
+  },
+  "transaction": {
+    "message": {
+      "accountKeys": [
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "SourceATA111111111111111111111111111111111",
+        "DestATA11111111111111111111111111111111111",
+        "Owner111111111111111111111111111111111111"
+      ],
+      "instructions": [
+        {
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "parsed": {
+            "type": "transfer",
+            "info": {
+              "source": "SourceATA111111111111111111111111111111111",
+              "destination": "DestATA11111111111111111111111111111111111",
+              "authority": "Owner111111111111111111111111111111111111",
+              "amount": "4200000"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
