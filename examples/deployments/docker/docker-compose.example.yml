@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: winmem
+      POSTGRES_USER: winmem
+      POSTGRES_DB: winmem
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  api:
+    image: winmem/api:latest
+    environment:
+      DATABASE_URL: postgresql://winmem:winmem@postgres:5432/winmem
+      REDIS_URL: redis://redis:6379
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL}
+      WINMEM_JWT_SECRET: ${WINMEM_JWT_SECRET}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    image: winmem/worker:latest
+    environment:
+      DATABASE_URL: postgresql://winmem:winmem@postgres:5432/winmem
+      REDIS_URL: redis://redis:6379
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+
+  web:
+    image: winmem/web:latest
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://api:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pg_data:

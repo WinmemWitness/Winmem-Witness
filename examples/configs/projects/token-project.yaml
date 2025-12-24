@@ -1,0 +1,46 @@
+version: "1"
+kind: "project"
+
+id: "token-project"
+name: "Example SPL Token Project"
+description: "Track a token mint and its activity, then preserve an auditable minimal state."
+
+sources:
+  - type: "solana"
+    cluster: "mainnet-beta"
+    rpcRef: "primary"
+
+targets:
+  token:
+    mint: "So11111111111111111111111111111111111111112" # example (wSOL)
+    includeToken2022: true
+    watch:
+      - "mint"
+      - "transfer"
+      - "burn"
+      - "freeze"
+      - "thaw"
+
+lifecycle:
+  # declare what it means for a project to be active or archived
+  inactivityThresholdSeconds: 604800   # 7 days without relevant activity
+  archiveAfterSeconds: 2592000         # 30 days after inactivity threshold
+  archiveMode: "freeze"
+
+audit:
+  batch:
+    maxEvents: 5000
+    maxSeconds: 900
+  merkle:
+    algorithm: "sha256"
+    includeCanonicalJson: true
+
+webhooks:
+  enabled: true
+  endpoints:
+    - name: "local-dev"
+      url: "http://localhost:8081/winmem-webhook"
+      secretEnv: "WINMEM_WEBHOOK_SECRET"
+      events:
+        - "audit.root_posted"
+        - "project.archived"

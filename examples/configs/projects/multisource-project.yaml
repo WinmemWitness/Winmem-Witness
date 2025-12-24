@@ -1,0 +1,37 @@
+version: "1"
+kind: "project"
+
+id: "multisource-project"
+name: "Multi-source Project"
+description: "Track multiple Solana targets across multiple RPC sources for resilience."
+
+sources:
+  - type: "solana"
+    cluster: "mainnet-beta"
+    rpcRef: "primary"
+  - type: "solana"
+    cluster: "mainnet-beta"
+    rpcRef: "fallback"
+
+targets:
+  token:
+    mint: "So11111111111111111111111111111111111111112"
+    watch: ["mint", "transfer", "burn"]
+  program:
+    programId: "Vote111111111111111111111111111111111111111"
+
+lifecycle:
+  inactivityThresholdSeconds: 604800
+  archiveAfterSeconds: 2592000
+  archiveMode: "freeze"
+
+audit:
+  batch:
+    maxEvents: 8000
+    maxSeconds: 900
+  merkle:
+    algorithm: "sha256"
+    includeCanonicalJson: true
+
+notes:
+  - "This config shows how Winmem can tolerate RPC failures by reading from multiple sources."

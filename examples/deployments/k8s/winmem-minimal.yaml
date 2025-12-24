@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: winmem
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: winmem-api
+  namespace: winmem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: winmem-api
+  template:
+    metadata:
+      labels:
+        app: winmem-api
+    spec:
+      containers:
+        - name: api
+          image: winmem/api:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: winmem-secrets
+                  key: databaseUrl
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: winmem-secrets
+                  key: redisUrl
+            - name: SOLANA_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: winmem-secrets
+                  key: solanaRpcUrl
+            - name: WINMEM_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: winmem-secrets
+                  key: jwtSecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: winmem-api
+  namespace: winmem
+spec:
+  selector:
+    app: winmem-api
+  ports:
+    - port: 8080
+      targetPort: 8080

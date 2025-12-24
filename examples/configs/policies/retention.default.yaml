@@ -1,0 +1,31 @@
+version: "1"
+kind: "retention_policy"
+
+# Retention controls what raw data is kept and for how long.
+# Winmem is designed to preserve a minimal, auditable state indefinitely,
+# while raw bulky details can be compacted/trimmed.
+
+retention:
+  rawEvents:
+    keepDays: 30
+    # keep important event types longer
+    overrides:
+      - match:
+          eventType: "audit.root_posted"
+        keepDays: 365
+  transactions:
+    keepDays: 7
+  blobs:
+    keepDays: 90
+  snapshots:
+    keepDays: 3650  # 10 years
+
+compaction:
+  # summarize witness logs over time (LLM or rule-based)
+  enabled: true
+  schedule:
+    everyHours: 24
+  strategy:
+    # "llm" or "rules"
+    mode: "llm"
+    targetTokens: 1200

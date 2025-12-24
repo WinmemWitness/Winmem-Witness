@@ -1,0 +1,30 @@
+# Example alert rules for Prometheus
+groups:
+  - name: winmem.rules
+    rules:
+      - alert: WinmemApiDown
+        expr: up{job="winmem-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Winmem API is down"
+          description: "No scrape targets are up for winmem-api."
+
+      - alert: WinmemQueueBacklog
+        expr: sum(winmem_queue_depth) > 5000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Winmem queue backlog is growing"
+          description: "Queue depth is above 5000 for more than 5 minutes."
+
+      - alert: WinmemHighLatency
+        expr: histogram_quantile(0.95, sum(rate(winmem_http_request_duration_ms_bucket[5m])) by (le)) > 1500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Winmem p95 API latency is high"
+          description: "p95 latency over 1500ms for more than 5 minutes."

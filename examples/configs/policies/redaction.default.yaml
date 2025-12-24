@@ -1,0 +1,41 @@
+version: "1"
+kind: "redaction_policy"
+
+# Redaction protects secrets and PII from being stored in witness logs or exports.
+# By default, Winmem removes:
+# - private keys and seed phrases (patterns)
+# - bearer tokens / API keys
+# - email addresses
+# - long numeric identifiers
+
+redaction:
+  enabled: true
+  rules:
+    - name: "private-keys"
+      type: "regex"
+      pattern: "(?i)(?:seed phrase|mnemonic|private key|secret key)\s*[:=]\s*[^\s]+"
+      replaceWith: "[REDACTED_SECRET]"
+    - name: "bearer-tokens"
+      type: "regex"
+      pattern: "(?i)authorization\s*:\s*bearer\s+[A-Za-z0-9\-\._~\+\/]+=*"
+      replaceWith: "authorization: Bearer [REDACTED_TOKEN]"
+    - name: "api-keys"
+      type: "regex"
+      pattern: "(?i)(?:api[_-]?key|x-api-key)\s*[:=]\s*[^\s]+"
+      replaceWith: "[REDACTED_API_KEY]"
+    - name: "emails"
+      type: "regex"
+      pattern: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+      replaceWith: "[REDACTED_EMAIL]"
+    - name: "long-ids"
+      type: "regex"
+      pattern: "\b\d{12,}\b"
+      replaceWith: "[REDACTED_ID]"
+
+allowlist:
+  # event fields allowed to be stored without redaction
+  fields:
+    - "signature"
+    - "slot"
+    - "blockTime"
+    - "programId"

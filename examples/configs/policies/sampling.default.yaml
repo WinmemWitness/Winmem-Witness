@@ -1,0 +1,27 @@
+version: "1"
+kind: "sampling_policy"
+
+# Sampling reduces ingest cost while maintaining auditability.
+# The audit root is computed over the events that were captured.
+
+sampling:
+  enabled: true
+  mode: "adaptive"  # "fixed" | "adaptive"
+  fixed:
+    rate: 1.0  # capture all
+  adaptive:
+    # Start capturing 100%, then decrease if throughput is high.
+    baseRate: 1.0
+    minRate: 0.1
+    maxRate: 1.0
+    targetEventsPerMinute: 3000
+    adjustment:
+      step: 0.05
+      everySeconds: 60
+
+priorities:
+  # always keep certain event types
+  alwaysKeep:
+    - "audit.root_posted"
+    - "project.archived"
+    - "project.unarchived"

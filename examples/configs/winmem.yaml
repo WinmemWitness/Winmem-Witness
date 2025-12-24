@@ -1,0 +1,114 @@
+# Winmem example configuration (single-tenant)
+# This file is consumed by:
+# - packages/cli (winmem init/up)
+# - apps/worker for scheduling + ingestion
+# - apps/api for serving project data & audit proofs
+#
+# NOTE: Use environment variables for secrets. Never commit private keys.
+
+version: "1"
+
+server:
+  baseUrl: "http://localhost:8080"
+  publicUrl: "http://localhost:3000"
+
+auth:
+  mode: "jwt"
+  jwt:
+    issuer: "winmem.local"
+    audience: "winmem"
+    accessTokenTtlSeconds: 3600
+    refreshTokenTtlSeconds: 604800
+    # In production, use a secret manager (KMS/Vault) and set via env:
+    # WINMEM_JWT_SECRET
+    secretEnv: "WINMEM_JWT_SECRET"
+
+storage:
+  postgres:
+    urlEnv: "DATABASE_URL"
+    pool:
+      min: 2
+      max: 20
+      idleTimeoutMs: 30000
+  redis:
+    urlEnv: "REDIS_URL"
+    prefix: "winmem:"
+  blobs:
+    driver: "filesystem"
+    filesystem:
+      basePath: "./data/blobs"
+    # Alternative:
+    # driver: "s3"
+    # s3:
+    #   regionEnv: "S3_REGION"
+    #   bucketEnv: "S3_BUCKET"
+    #   accessKeyIdEnv: "S3_ACCESS_KEY_ID"
+    #   secretAccessKeyEnv: "S3_SECRET_ACCESS_KEY"
+
+solana:
+  cluster: "mainnet-beta"
+  # RPC pool lets the system spread reads to multiple providers
+  rpcPool:
+    strategy: "round_robin"
+    minHealthy: 1
+    endpoints:
+      - name: "primary"
+        urlEnv: "SOLANA_RPC_URL"
+        timeoutMs: 30000
+        maxInFlight: 16
+        weight: 10
+  # Optional websocket endpoint for faster signature streams (if supported)
+  wsUrlEnv: "SOLANA_WS_URL"
+
+indexing:
+  # ingestion cadence
+  scheduler:
+    tickSeconds: 10
+  backfill:
+    # limit for historical backfill batches
+    maxSignaturesPerBatch: 1000
+    maxTxNoticeDepth: 10000
+  parsing:
+    # which parsers are enabled
+    enable:
+      system: true
+      splToken: true
+      token2022: true
+      metaplex: true
+      memo: true
+      genericProgram: true
+
+llm:
+  provider: "openai"
+  openai:
+    apiKeyEnv: "OPENAI_API_KEY"
+    model: "gpt-4o-mini"
+    timeoutMs: 20000
+  # provider: "local"
+  # local:
+  #   baseUrl: "http://localhost:11434"
+  #   model: "llama3.1"
+
+observability:
+  logs:
+    level: "info"
+    json: true
+  metrics:
+    enabled: true
+    port: 9464
+  tracing:
+    enabled: false
+    otlpEndpointEnv: "OTEL_EXPORTER_OTLP_ENDPOINT"
+
+policies:
+  retentionFile: "./examples/configs/policies/retention.default.yaml"
+  redactionFile: "./examples/configs/policies/redaction.default.yaml"
+  samplingFile: "./examples/configs/policies/sampling.default.yaml"
+
+features:
+  # On-chain anchoring of audit roots (optional)
+  onchainAnchor:
+    enabled: false
+    programIdEnv: "WINMEM_ANCHOR_PROGRAM_ID"
+    payerKeypairPathEnv: "WINMEM_ANCHOR_PAYER_KEYPAIR"
+    commitment: "finalized"

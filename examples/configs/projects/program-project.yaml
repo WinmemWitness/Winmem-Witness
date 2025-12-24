@@ -1,0 +1,33 @@
+version: "1"
+kind: "project"
+
+id: "program-project"
+name: "Example Program Project"
+description: "Track a program's instruction surface and preserve its observable behavior."
+
+sources:
+  - type: "solana"
+    cluster: "mainnet-beta"
+    rpcRef: "primary"
+
+targets:
+  program:
+    programId: "Vote111111111111111111111111111111111111111" # example program
+    trackInstructions:
+      - "*"  # track all instructions (use with care)
+    accounts:
+      # program-related key accounts that you care about
+      - "11111111111111111111111111111111"
+
+lifecycle:
+  inactivityThresholdSeconds: 259200   # 3 days
+  archiveAfterSeconds: 2592000         # 30 days
+  archiveMode: "freeze"
+
+audit:
+  batch:
+    maxEvents: 10000
+    maxSeconds: 900
+  merkle:
+    algorithm: "sha256"
+    includeCanonicalJson: true

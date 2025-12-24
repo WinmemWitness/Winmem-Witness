@@ -1,0 +1,34 @@
+version: "1"
+kind: "project"
+
+id: "nft-project"
+name: "Example NFT Project"
+description: "Track NFT mint + transfers for a collection, preserve snapshots with audit proofs."
+
+sources:
+  - type: "solana"
+    cluster: "mainnet-beta"
+    rpcRef: "primary"
+
+targets:
+  nft:
+    # Example: Metaplex collection address (placeholder)
+    collection: "11111111111111111111111111111111"
+    track:
+      - "mint"
+      - "transfer"
+      - "burn"
+      - "metadata_update"
+
+lifecycle:
+  inactivityThresholdSeconds: 1209600  # 14 days
+  archiveAfterSeconds: 5184000         # 60 days
+  archiveMode: "freeze"
+
+audit:
+  batch:
+    maxEvents: 2000
+    maxSeconds: 900
+  merkle:
+    algorithm: "sha256"
+    includeCanonicalJson: true
