@@ -1,0 +1,16 @@
+# Example docker-compose override.
+# Copy to: infra/docker/docker-compose.override.yml
+#
+# Use this file to override image tags, ports, or enable optional profiles locally
+# without modifying tracked compose files.
+
+services:
+  api:
+    environment:
+      WINMEM_LOG_LEVEL: debug
+  worker:
+    environment:
+      WINMEM_WORKER_CONCURRENCY: 2
+
+# Enable ClickHouse by running:
+# docker compose --profile clickhouse up -d

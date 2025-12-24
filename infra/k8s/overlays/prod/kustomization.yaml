@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: winmem
+
+resources:
+  - ../../base/namespace.yaml
+  - ../../base/api-deploy.yaml
+  - ../../base/worker-deploy.yaml
+  - ../../base/web-deploy.yaml
+  - ../../base/ingress.yaml
+  - ../../base/hpa.yaml
+
+# In production, supply real secrets via ExternalSecrets or a secret manager.
+# Do not commit production secrets.

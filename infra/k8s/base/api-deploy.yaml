@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: winmem-api
+  namespace: winmem
+  labels:
+    app.kubernetes.io/name: winmem-api
+    app.kubernetes.io/part-of: winmem
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: winmem-api
+  template:
+    metadata:
+      labels:
+        app: winmem-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/your-org/winmem-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8787
+              name: http
+          envFrom:
+            - configMapRef:
+                name: winmem-config
+            - secretRef:
+                name: winmem-secrets
+          env:
+            - name: PORT
+              value: "8787"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "2"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: winmem-api
+  namespace: winmem
+spec:
+  selector:
+    app: winmem-api
+  ports:
+    - name: http
+      port: 8787
+      targetPort: http

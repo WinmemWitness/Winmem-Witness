@@ -1,0 +1,119 @@
+version: "3.9"
+
+name: winmem-dev
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.api
+      target: dev
+    environment:
+      NODE_ENV: development
+      PORT: 8787
+      WINMEM_LOG_LEVEL: debug
+      WINMEM_RPC_URL: ${WINMEM_RPC_URL:-https://api.mainnet-beta.solana.com}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://winmem:winmem@postgres:5432/winmem}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      WINMEM_API_KEY_ADMIN: ${WINMEM_API_KEY_ADMIN:-dev_admin_key_change_me}
+      WINMEM_API_KEY_READONLY: ${WINMEM_API_KEY_READONLY:-dev_readonly_key_change_me}
+      WINMEM_CORS_ORIGINS: ${WINMEM_CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8787:8787"
+    volumes:
+      - ../../apps/api:/app/apps/api
+      - ../../packages:/app/packages
+      - ../../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../../package.json:/app/package.json:ro
+      - ../../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.worker
+      target: dev
+    environment:
+      NODE_ENV: development
+      WINMEM_LOG_LEVEL: debug
+      WINMEM_RPC_URL: ${WINMEM_RPC_URL:-https://api.mainnet-beta.solana.com}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://winmem:winmem@postgres:5432/winmem}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      WINMEM_API_KEY_ADMIN: ${WINMEM_API_KEY_ADMIN:-dev_admin_key_change_me}
+      WINMEM_API_KEY_READONLY: ${WINMEM_API_KEY_READONLY:-dev_readonly_key_change_me}
+      WINMEM_WORKER_CONCURRENCY: ${WINMEM_WORKER_CONCURRENCY:-4}
+      WINMEM_ENABLE_LLM: ${WINMEM_ENABLE_LLM:-false}
+    volumes:
+      - ../../apps/worker:/app/apps/worker
+      - ../../packages:/app/packages
+      - ../../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../../package.json:/app/package.json:ro
+      - ../../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.web
+      target: dev
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_WINMEM_API_URL: http://localhost:8787
+      NEXT_PUBLIC_WINMEM_PUBLIC_MODE: "false"
+      NEXT_PUBLIC_WINMEM_BRAND: Winmem
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../apps/web:/app/apps/web
+      - ../../packages:/app/packages
+    depends_on:
+      - api
+
+  postgres:
+    image: postgres:16
+    container_name: winmem-dev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: winmem
+      POSTGRES_PASSWORD: winmem
+      POSTGRES_DB: winmem
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+      - ./postgres/tuning.conf:/etc/postgresql/postgresql.conf:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U winmem -d winmem"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: winmem-dev-redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+  redisdata:

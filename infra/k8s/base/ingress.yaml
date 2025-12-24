@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: winmem-ingress
+  namespace: winmem
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - host: winmem.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: winmem-web
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: winmem-api
+                port:
+                  number: 8787

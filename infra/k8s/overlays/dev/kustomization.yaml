@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: winmem
+
+resources:
+  - ../../base/namespace.yaml
+  - ../../base/configmaps-secrets.example.yaml
+  - ../../base/api-deploy.yaml
+  - ../../base/worker-deploy.yaml
+  - ../../base/web-deploy.yaml
+  - ../../base/ingress.yaml
+  - ../../base/hpa.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: winmem-api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: winmem-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1

@@ -1,0 +1,41 @@
+{
+  "id": null,
+  "uid": "winmem-overview",
+  "title": "Winmem Overview",
+  "tags": ["winmem"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "API Requests (rate)",
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        { "expr": "sum(rate(http_requests_total[1m]))", "legendFormat": "rps" }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 6 }
+    },
+    {
+      "type": "stat",
+      "title": "Worker Jobs Failed (5m)",
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        { "expr": "sum(increase(winmem_jobs_failed_total[5m]))", "legendFormat": "failed" }
+      ],
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 6 }
+    },
+    {
+      "type": "stat",
+      "title": "Queue Depth",
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        { "expr": "sum(winmem_queue_depth)", "legendFormat": "items" }
+      ],
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 6 }
+    }
+  ],
+  "templating": { "list": [] },
+  "annotations": { "list": [] }
+}

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: winmem-web
+  namespace: winmem
+  labels:
+    app.kubernetes.io/name: winmem-web
+    app.kubernetes.io/part-of: winmem
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: winmem-web
+  template:
+    metadata:
+      labels:
+        app: winmem-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/your-org/winmem-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: NEXT_PUBLIC_WINMEM_API_URL
+              value: "http://winmem-api:8787"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: winmem-web
+  namespace: winmem
+spec:
+  selector:
+    app: winmem-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

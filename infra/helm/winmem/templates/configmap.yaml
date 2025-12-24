@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "winmem.fullname" . }}-config
+  labels:
+    {{- include "winmem.labels" . | nindent 4 }}
+data:
+  WINMEM_LOG_LEVEL: {{ .Values.api.env.WINMEM_LOG_LEVEL | quote }}
+  WINMEM_RPC_URL: {{ .Values.external.rpcUrl | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.observability.otlpEndpoint | quote }}
+  WINMEM_OTEL_ENABLED: {{ .Values.observability.otelEnabled | quote }}

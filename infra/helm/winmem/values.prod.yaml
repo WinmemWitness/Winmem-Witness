@@ -1,0 +1,42 @@
+api:
+  replicaCount: 3
+  env:
+    WINMEM_LOG_LEVEL: info
+
+worker:
+  replicaCount: 3
+  env:
+    WINMEM_WORKER_CONCURRENCY: "12"
+    WINMEM_LOG_LEVEL: info
+
+web:
+  replicaCount: 2
+
+api:
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - host: api.winmem.example
+        paths:
+          - path: /
+            pathType: Prefix
+
+web:
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - host: winmem.example
+        paths:
+          - path: /
+            pathType: Prefix
+
+external:
+  databaseUrl: "postgresql://<user>:<pass>@<host>:5432/<db>"
+  redisUrl: "redis://:<pass>@<host>:6379"
+  rpcUrl: "https://<your-dedicated-rpc>"
+
+secrets:
+  apiKeyAdmin: "<set-in-secret-manager>"
+  apiKeyReadonly: "<set-in-secret-manager>"

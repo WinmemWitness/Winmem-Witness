@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "winmem.fullname" . }}-web
+  labels:
+    {{- include "winmem.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "winmem.fullname" . }}-web
+  template:
+    metadata:
+      labels:
+        app: {{ include "winmem.fullname" . }}-web
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          imagePullPolicy: {{ .Values.web.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_WINMEM_API_URL
+              value: {{ .Values.web.env.NEXT_PUBLIC_WINMEM_API_URL | quote }}
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}

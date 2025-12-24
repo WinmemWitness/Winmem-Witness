@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: winmem
+  labels:
+    app.kubernetes.io/name: winmem
+    app.kubernetes.io/part-of: winmem

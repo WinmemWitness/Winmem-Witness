@@ -1,0 +1,100 @@
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+  imagePullSecrets: []
+  labels: {}
+
+api:
+  image:
+    repository: ghcr.io/your-org/winmem-api
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 8787
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: winmem.local
+        paths:
+          - path: /api
+            pathType: Prefix
+    tls: []
+  env:
+    PORT: "8787"
+    WINMEM_LOG_LEVEL: info
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: "2"
+      memory: 1Gi
+
+worker:
+  image:
+    repository: ghcr.io/your-org/winmem-worker
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  env:
+    WINMEM_WORKER_CONCURRENCY: "8"
+    WINMEM_LOG_LEVEL: info
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: "2"
+      memory: 1Gi
+
+web:
+  image:
+    repository: ghcr.io/your-org/winmem-web
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 80
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: winmem.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+  env:
+    NEXT_PUBLIC_WINMEM_API_URL: "http://winmem-api:8787"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+
+postgres:
+  enabled: false
+
+redis:
+  enabled: false
+
+external:
+  databaseUrl: ""
+  redisUrl: ""
+  rpcUrl: "https://api.mainnet-beta.solana.com"
+
+secrets:
+  apiKeyAdmin: ""
+  apiKeyReadonly: ""
+
+observability:
+  otelEnabled: true
+  otlpEndpoint: "http://tempo:4318"

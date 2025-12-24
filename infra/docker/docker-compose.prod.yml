@@ -1,0 +1,89 @@
+version: "3.9"
+
+name: winmem-prod
+
+services:
+  api:
+    image: ${WINMEM_API_IMAGE:-ghcr.io/your-org/winmem-api:stable}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${API_PORT:-8787}
+      WINMEM_LOG_LEVEL: ${WINMEM_LOG_LEVEL:-info}
+      WINMEM_RPC_URL: ${WINMEM_RPC_URL}
+      WINMEM_RPC_TIMEOUT_MS: ${WINMEM_RPC_TIMEOUT_MS:-20000}
+      WINMEM_RPC_RETRIES: ${WINMEM_RPC_RETRIES:-5}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      WINMEM_API_KEY_ADMIN: ${WINMEM_API_KEY_ADMIN}
+      WINMEM_API_KEY_READONLY: ${WINMEM_API_KEY_READONLY}
+      WINMEM_CORS_ORIGINS: ${WINMEM_CORS_ORIGINS:-https://your-domain.example}
+      WINMEM_RATE_LIMIT_RPM: ${WINMEM_RATE_LIMIT_RPM:-600}
+      WINMEM_OTEL_ENABLED: ${WINMEM_OTEL_ENABLED:-true}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4318}
+      OTEL_SERVICE_NAME: winmem-api
+    ports:
+      - "${API_PORT:-8787}:8787"
+    depends_on:
+      - redis
+
+  worker:
+    image: ${WINMEM_WORKER_IMAGE:-ghcr.io/your-org/winmem-worker:stable}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      WINMEM_LOG_LEVEL: ${WINMEM_LOG_LEVEL:-info}
+      WINMEM_RPC_URL: ${WINMEM_RPC_URL}
+      WINMEM_RPC_TIMEOUT_MS: ${WINMEM_RPC_TIMEOUT_MS:-20000}
+      WINMEM_RPC_RETRIES: ${WINMEM_RPC_RETRIES:-5}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      WINMEM_API_KEY_ADMIN: ${WINMEM_API_KEY_ADMIN}
+      WINMEM_API_KEY_READONLY: ${WINMEM_API_KEY_READONLY}
+      WINMEM_WORKER_CONCURRENCY: ${WINMEM_WORKER_CONCURRENCY:-8}
+      WINMEM_QUEUE_PREFIX: ${WINMEM_QUEUE_PREFIX:-winmem}
+      WINMEM_PROOF_WINDOW_SECONDS: ${WINMEM_PROOF_WINDOW_SECONDS:-86400}
+      WINMEM_WITNESS_CADENCE_SECONDS: ${WINMEM_WITNESS_CADENCE_SECONDS:-86400}
+      WINMEM_ENABLE_LLM: ${WINMEM_ENABLE_LLM:-false}
+      WINMEM_LLM_PROVIDER: ${WINMEM_LLM_PROVIDER:-openai}
+      WINMEM_LLM_MODEL: ${WINMEM_LLM_MODEL:-gpt-4o-mini}
+      WINMEM_LLM_API_KEY: ${WINMEM_LLM_API_KEY:-}
+      WINMEM_OTEL_ENABLED: ${WINMEM_OTEL_ENABLED:-true}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4318}
+      OTEL_SERVICE_NAME: winmem-worker
+
+  web:
+    image: ${WINMEM_WEB_IMAGE:-ghcr.io/your-org/winmem-web:stable}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_WINMEM_API_URL: ${NEXT_PUBLIC_WINMEM_API_URL}
+      NEXT_PUBLIC_WINMEM_PUBLIC_MODE: ${WINMEM_PUBLIC_MODE:-false}
+      NEXT_PUBLIC_WINMEM_BRAND: ${NEXT_PUBLIC_WINMEM_BRAND:-Winmem}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo/config.yml"]
+    volumes:
+      - ./tempo/config.yml:/etc/tempo/config.yml:ro
+      - tempodata:/var/tempo
+    ports:
+      - "${TEMPO_HTTP_PORT:-3200}:3200"
+      - "${OTEL_HTTP_PORT:-4318}:4318"
+
+volumes:
+  redisdata:
+  tempodata:

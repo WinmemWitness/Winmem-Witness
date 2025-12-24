@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "winmem.fullname" . }}-worker
+  labels:
+    {{- include "winmem.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "winmem.fullname" . }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ include "winmem.fullname" . }}-worker
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: 8787
+          env:
+            - name: WINMEM_WORKER_CONCURRENCY
+              value: {{ .Values.worker.env.WINMEM_WORKER_CONCURRENCY | quote }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "winmem.fullname" . }}-config
+            - secretRef:
+                name: {{ include "winmem.fullname" . }}-secrets
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+            initialDelaySeconds: 10
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}

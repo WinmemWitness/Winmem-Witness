@@ -1,0 +1,6 @@
+apiVersion: v2
+name: winmem
+description: Winmem - deployable AI runtime for Solana project persistence, memory, and audit proofs
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

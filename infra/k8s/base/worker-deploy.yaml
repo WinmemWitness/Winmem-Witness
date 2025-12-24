@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: winmem-worker
+  namespace: winmem
+  labels:
+    app.kubernetes.io/name: winmem-worker
+    app.kubernetes.io/part-of: winmem
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: winmem-worker
+  template:
+    metadata:
+      labels:
+        app: winmem-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/your-org/winmem-worker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8787
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: winmem-config
+            - secretRef:
+                name: winmem-secrets
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "winmem-worker"
+            - name: WINMEM_WORKER_CONCURRENCY
+              value: "8"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "2"
+              memory: "1Gi"

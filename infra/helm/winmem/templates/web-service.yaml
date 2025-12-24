@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "winmem.fullname" . }}-web
+  labels:
+    {{- include "winmem.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.web.service.type }}
+  selector:
+    app: {{ include "winmem.fullname" . }}-web
+  ports:
+    - name: http
+      port: {{ .Values.web.service.port }}
+      targetPort: http

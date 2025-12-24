@@ -1,0 +1,22 @@
+api:
+  replicaCount: 1
+  env:
+    WINMEM_LOG_LEVEL: debug
+
+worker:
+  replicaCount: 1
+  env:
+    WINMEM_WORKER_CONCURRENCY: "2"
+    WINMEM_LOG_LEVEL: debug
+
+web:
+  replicaCount: 1
+
+external:
+  databaseUrl: "postgresql://winmem:winmem@postgres:5432/winmem"
+  redisUrl: "redis://redis:6379"
+  rpcUrl: "https://api.mainnet-beta.solana.com"
+
+secrets:
+  apiKeyAdmin: "dev_admin_key_change_me"
+  apiKeyReadonly: "dev_readonly_key_change_me"

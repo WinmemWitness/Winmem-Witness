@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "winmem.fullname" . }}-api
+  labels:
+    {{- include "winmem.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "winmem.fullname" . }}-api
+  template:
+    metadata:
+      labels:
+        app: {{ include "winmem.fullname" . }}-api
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8787
+          env:
+            - name: PORT
+              value: {{ .Values.api.env.PORT | quote }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "winmem.fullname" . }}-config
+            - secretRef:
+                name: {{ include "winmem.fullname" . }}-secrets
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
